@@ -16,4 +16,5 @@ class MinimalDeduction (α : Type) where
   or_intro_r : ∀ {p q : Formula α}, Pr q → Pr (p ∨ q)
   or_el      : ∀ {p q r : Formula α}, Pr (p ∨ q) → (Pr p → Pr r) → (Pr q → Pr r) → Pr r
 
-notation "⊢ " p => MinimalDeduction.Pr p
+-- Use 'prefix' instead of 'notation' for better parsing
+prefix:50 "⊢ " => MinimalDeduction.Pr
