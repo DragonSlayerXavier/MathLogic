@@ -1,0 +1,10 @@
+name = "MathLogic"
+version = "0.1.0"
+defaultTargets = ["mathlogic"]
+
+[[lean_lib]]
+name = "MathLogic"
+
+[[lean_exe]]
+name = "mathlogic"
+root = "Main"
