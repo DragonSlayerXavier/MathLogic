@@ -1,6 +1,6 @@
 import MathLogic.FOL.Syntax
 
-class MinimalFoldeduction (S : Signature) (α : Type) [BEq α] where
+class MinimalFOLDeduction (S : Signature) (α : Type) [BEq α] where
   Pr : Formula S α → Prop
 
   -- Rules of Inference
@@ -44,32 +44,32 @@ class MinimalFoldeduction (S : Signature) (α : Type) [BEq α] where
   free_for_self  : ∀ (p : Formula S α) (x : α), isFreeFor (!x) x p = true
   free_for_var   : ∀ (p : Formula S α) (x : α), isFreeIn x p = false → isFreeFor (!x) x p = true
 
-notation:30 "⊢ " p:0 => MinimalFoldeduction.Pr p
+notation:30 "⊢ " p:0 => MinimalFOLDeduction.Pr p
 
 -- ==========================================
 -- THEOREMS
 -- ==========================================
 
-variable {S : Signature} {α : Type} [BEq α] [MinimalFoldeduction S α]
+variable {S : Signature} {α : Type} [BEq α] [MinimalFOLDeduction S α]
 
 theorem rule_gen_simple {p : Formula S α} (x : α) : (⊢ p) → (⊢ ∀' x, p) := by
   intro h
-  have h1 : ⊢ ⊤ ⇒ p := MinimalFoldeduction.deduction (λ _ => h)
-  have h2 : ⊢ ⊤ ⇒ ∀' x, p := MinimalFoldeduction.all_intro x rfl h1
-  exact MinimalFoldeduction.mp h2 MinimalFoldeduction.trivial
+  have h1 : ⊢ ⊤ ⇒ p := MinimalFOLDeduction.deduction (λ _ => h)
+  have h2 : ⊢ ⊤ ⇒ ∀' x, p := MinimalFOLDeduction.all_intro x rfl h1
+  exact MinimalFOLDeduction.mp h2 MinimalFOLDeduction.trivial
 
 theorem forall_elim_simple {p : Formula S α} (x : α) : (⊢ ∀' x, p) → (⊢ p) := by
   intro h
-  let ax := MinimalFoldeduction.all_elim x (!x) (MinimalFoldeduction.free_for_self p x)
-  let inst := MinimalFoldeduction.mp ax h
-  rw [MinimalFoldeduction.subst_self] at inst
+  let ax := MinimalFOLDeduction.all_elim x (!x) (MinimalFOLDeduction.free_for_self p x)
+  let inst := MinimalFOLDeduction.mp ax h
+  rw [MinimalFOLDeduction.subst_self] at inst
   exact inst
 
 theorem exists_intro_simple {p : Formula S α} (x : α) : (⊢ p) → (⊢ ∃' x, p) := by
   intro h
-  let ax := MinimalFoldeduction.ex_intro x (!x) (MinimalFoldeduction.free_for_self p x)
-  rw [MinimalFoldeduction.subst_self] at ax
-  exact MinimalFoldeduction.mp ax h
+  let ax := MinimalFOLDeduction.ex_intro x (!x) (MinimalFOLDeduction.free_for_self p x)
+  rw [MinimalFOLDeduction.subst_self] at ax
+  exact MinimalFOLDeduction.mp ax h
 
 variable {S : Signature} {α : Type} [BEq α]
 
@@ -103,19 +103,19 @@ theorem substF_all_same [LawfulBEq α] (p : Formula S α) (x : α) (s : Term S �
 -- QUANTIFIER RULES
 -- ==========================================
 
-variable [MinimalFoldeduction S α]
+variable [MinimalFOLDeduction S α]
 
 theorem forall_elim {p : Formula S α} (x : α) (t : Term S α) :
   isFreeFor t x p = true → (⊢ ∀' x, p) → (⊢ p⟦x := t⟧) := by
   intro h_ff h_all
-  exact MinimalFoldeduction.mp (MinimalFoldeduction.all_elim x t h_ff) h_all
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.all_elim x t h_ff) h_all
 
 theorem exists_intro {p : Formula S α} (x : α) (t : Term S α) :
   isFreeFor t x p = true → (⊢ p⟦x := t⟧) → (⊢ ∃' x, p) := by
   intro h_ff h_inst
-  exact MinimalFoldeduction.mp (MinimalFoldeduction.ex_intro x t h_ff) h_inst
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.ex_intro x t h_ff) h_inst
 
 theorem exists_elim {p q : Formula S α} (x : α) :
   (⊢ p ⇒ q) → isFreeIn x q = false → (⊢ (∃' x, p) ⇒ q) := by
   intro h_imp h_nf
-  exact MinimalFoldeduction.ex_elim x h_nf h_imp
+  exact MinimalFOLDeduction.ex_elim x h_nf h_imp

@@ -3,7 +3,7 @@ import MathLogic.FOL.Deduction.Classical
 import MathLogic.FOL.Theorems.Minimal
 import MathLogic.FOL.Theorems.Intuitionistic
 
-variable {S : Signature} {α : Type} [BEq α] [ClassicalFoldeduction S α]
+variable {S : Signature} {α : Type} [BEq α] [ClassicalFOLDeduction S α]
 
 theorem ex_falso {p : Formula S α} : ⊢ ⊥ ⇒ p := sorry
 

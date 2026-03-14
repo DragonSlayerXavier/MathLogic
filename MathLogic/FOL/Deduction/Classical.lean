@@ -1,4 +1,4 @@
-import MathLogic.FOL.Deduction.Intuitionistic
+import MathLogic.FOL.Deduction.Minimal
 
-class ClassicalFoldeduction (S : Signature) (α : Type) [BEq α] extends IntuitionisticFoldeduction S α where
+class ClassicalFOLDeduction (S : Signature) (α : Type) [BEq α] extends MinimalFOLDeduction S α where
   dne : ∀ {p : Formula S α}, Pr (¬¬p ⇒ p)
