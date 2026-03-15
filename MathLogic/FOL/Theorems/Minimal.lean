@@ -46,41 +46,63 @@ theorem all_conj_dist {p q : Formula S α} (x : α) : ⊢ (∀' x, (p ∧ q)) �
     sorry
   exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (∀' x, (p ∧ q)) ((∀' x, p) ∧ (∀' x, q))) hfwd) hbwd
 
-theorem ex_conj_dist_left {p q : Formula S α} (x : α) :
-  isFreeIn x q = false → ⊢ (∃' x, (p ∧ q)) ⇔ (∃' x, p) ∧ q := sorry
+theorem ex_conj_dist_left {p q : Formula S α} (x : α) : isFreeIn x q = false → ⊢ (∃' x, (p ∧ q)) ⇔ (∃' x, p) ∧ q := by
+  intro hfree
+  have hfwd : ⊢ (∃' x, (p ∧ q)) ⇒ ((∃' x, p) ∧ q) := by sorry
+  have hbwd : ⊢ ((∃' x, p) ∧ q) ⇒ (∃' x, (p ∧ q)) := by sorry
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (∃' x, (p ∧ q)) ((∃' x, p) ∧ q)) hfwd) hbwd
 
 -- ==========================================
 -- DISTRIBUTION OVER DISJUNCTION
 -- ==========================================
 
-theorem all_disj_dist_left {p q : Formula S α} (x : α) :
-  isFreeIn x q = false → ⊢ (∀' x, (p ∨ q)) ⇔ (∀' x, p) ∨ q := sorry
+theorem all_disj_dist_left {p q : Formula S α} (x : α) : isFreeIn x q = false → ⊢ (∀' x, (p ∨ q)) ⇔ (∀' x, p) ∨ q := by
+  intro hfree
+  have hfwd : ⊢ (∀' x, (p ∨ q)) ⇒ ((∀' x, p) ∨ q) := by sorry
+  have hbwd : ⊢ ((∀' x, p) ∨ q) ⇒ (∀' x, (p ∨ q)) := by sorry
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (∀' x, (p ∨ q)) ((∀' x, p) ∨ q)) hfwd) hbwd
 
-theorem ex_disj_dist {p q : Formula S α} (x : α) :
-  ⊢ (∃' x, (p ∨ q)) ⇔ (∃' x, p) ∨ (∃' x, q) := sorry
+theorem ex_disj_dist {p q : Formula S α} (x : α) : ⊢ (∃' x, (p ∨ q)) ⇔ (∃' x, p) ∨ (∃' x, q) := by
+  have hfwd : ⊢ (∃' x, (p ∨ q)) ⇒ ((∃' x, p) ∨ (∃' x, q)) := by sorry
+  have hbwd : ⊢ ((∃' x, p) ∨ (∃' x, q)) ⇒ (∃' x, (p ∨ q)) := by sorry
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (∃' x, (p ∨ q)) ((∃' x, p) ∨ (∃' x, q)) ) hfwd) hbwd
 
 -- ==========================================
 -- DISTRIBUTION OVER IMPLICATION
 -- ==========================================
 
-theorem all_imp_dist_left {p q : Formula S α} (x : α) :
-  isFreeIn x p = false → ⊢ (∀' x, (p ⇒ q)) ⇔ p ⇒ ∀' x, q := sorry
+theorem all_imp_dist_left {p q : Formula S α} (x : α) : isFreeIn x p = false → ⊢ (∀' x, (p ⇒ q)) ⇔ p ⇒ ∀' x, q := by
+  intro hfree
+  have hfwd : ⊢ (∀' x, (p ⇒ q)) ⇒ (p ⇒ ∀' x, q) := by sorry
+  have hbwd : ⊢ (p ⇒ ∀' x, q) ⇒ (∀' x, (p ⇒ q)) := by sorry
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (∀' x, (p ⇒ q)) (p ⇒ ∀' x, q) ) hfwd) hbwd
 
-theorem ex_imp_dist_left {p q : Formula S α} (x : α) :
-  isFreeIn x p = false → ⊢ (∃' x, (p ⇒ q)) ⇔ p ⇒ ∃' x, q := sorry
+theorem ex_imp_dist_left {p q : Formula S α} (x : α) : isFreeIn x p = false → ⊢ (∃' x, (p ⇒ q)) ⇔ p ⇒ ∃' x, q := by
+  intro hfree
+  have hfwd : ⊢ (∃' x, (p ⇒ q)) ⇒ (p ⇒ ∃' x, q) := by sorry
+  have hbwd : ⊢ (p ⇒ ∃' x, q) ⇒ (∃' x, (p ⇒ q)) := by sorry
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (∃' x, (p ⇒ q)) (p ⇒ ∃' x, q) ) hfwd) hbwd
 
-theorem all_imp_dist_right {p q : Formula S α} (x : α) :
-  isFreeIn x q = false → ⊢ (∀' x, (p ⇒ q)) ⇔ (∃' x, p) ⇒ q := sorry
+theorem all_imp_dist_right {p q : Formula S α} (x : α) : isFreeIn x q = false → ⊢ (∀' x, (p ⇒ q)) ⇔ (∃' x, p) ⇒ q := by
+  intro hfree
+  have hfwd : ⊢ (∀' x, (p ⇒ q)) ⇒ ((∃' x, p) ⇒ q) := by sorry
+  have hbwd : ⊢ ((∃' x, p) ⇒ q) ⇒ (∀' x, (p ⇒ q)) := by sorry
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (∀' x, (p ⇒ q)) ((∃' x, p) ⇒ q) ) hfwd) hbwd
 
-theorem ex_imp_dist_right {p q : Formula S α} (x : α) :
-  isFreeIn x q = false → ⊢ (∃' x, (p ⇒ q)) ⇔ (∀' x, p) ⇒ q := sorry
+theorem ex_imp_dist_right {p q : Formula S α} (x : α) : isFreeIn x q = false → ⊢ (∃' x, (p ⇒ q)) ⇔ (∀' x, p) ⇒ q := by
+  intro hfree
+  have hfwd : ⊢ (∃' x, (p ⇒ q)) ⇒ ((∀' x, p) ⇒ q) := by sorry
+  have hbwd : ⊢ ((∀' x, p) ⇒ q) ⇒ (∃' x, (p ⇒ q)) := by sorry
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (∃' x, (p ⇒ q)) ((∀' x, p) ⇒ q) ) hfwd) hbwd
 
 -- ==========================================
 -- NEGATION & DE MORGAN FOR QUANTIFIERS
 -- ==========================================
 
-theorem neg_ex_iff_all_neg {p : Formula S α} (x : α) :
-  ⊢ ¬∃' x, p ⇔ ∀' x, ¬p := sorry
+theorem neg_ex_iff_all_neg {p : Formula S α} (x : α) : ⊢ (¬∃' x, p) ⇔ (∀' x, ¬p) := by
+  have hfwd : ⊢ (¬∃' x, p) ⇒ (∀' x, ¬p) := by sorry
+  have hbwd : ⊢ (∀' x, ¬p) ⇒ (¬∃' x, p) := by sorry
+  exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro (¬∃' x, p) (∀' x, ¬p) ) hfwd) hbwd
 
-theorem neg_all_from_ex_neg {p : Formula S α} (x : α) :
-  ⊢ (∃' x, ¬p) ⇒ ¬∀' x, p := sorry
+theorem neg_all_from_ex_neg {p : Formula S α} (x : α) : ⊢ (∃' x, ¬p) ⇒ ¬∀' x, p := by
+  sorry
