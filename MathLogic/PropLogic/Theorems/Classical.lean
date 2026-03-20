@@ -154,7 +154,7 @@ theorem imp_iff_not_disj (A B : Formula α) : ⊢ ((A ⇒ B) ⇔ (¬A ∨ B)) :=
       intro hb
       exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.neg_elim B) hnb) hb
     exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.disj_elim (¬A) B ⊥) hnna') hnb') hnab
-  exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.iff_intro (A ⇒ B) (¬A ∨ B)) hfwd) hbwd
+  exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.iff_intro _ _) hfwd) hbwd
 
 theorem de_morgan_conj (A B : Formula α) : ⊢ (¬(A ∧ B) ⇔ (¬A ∨ ¬B)) := by
   have hfwd : ⊢ (¬(A ∧ B) ⇒ (¬A ∨ ¬B)) := by
