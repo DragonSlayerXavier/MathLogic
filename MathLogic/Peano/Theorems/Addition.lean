@@ -3,8 +3,9 @@ import MathLogic.Peano.Deduction
 namespace Peano
 
 variable {α : Type} [BEq α] [LawfulBEq α]
-variable [MinimalFOLDeduction PeanoSignature α]
 variable [ClassicalFOLDeduction PeanoSignature α]
+variable [EqualityDeduction PeanoSignature α PeanoPred.eq]
+variable [PeanoEquality α]
 variable [PeanoDeduction α]
 
 theorem zero_add (x : α) :
