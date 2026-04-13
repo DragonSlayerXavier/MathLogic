@@ -35,3 +35,49 @@ class PeanoDeduction (α : Type) [BEq α] [LawfulBEq α] [ClassicalFOLDeduction 
 
   induction : ∀ (p : Formula PeanoSignature α) (x : α),
     ⊢ p⟦x := 0⟧ ⇒ ((∀' x, p ⇒ p⟦x := S' (V x)⟧) ⇒ ∀' x, p)
+
+  theorem substT_id (t : Term PeanoSignature α) (x : α) (s : Term PeanoSignature α)
+  [BEq α] [LawfulBEq α] [MinimalFOLDeduction PeanoSignature α]
+  (h : (freeVarsTerm t).contains x = false) :
+  substT t x s = t := by
+  let p : Formula PeanoSignature α := t ≃ t
+  have h_nf : isFreeIn x p = false := by
+    unfold p isFreeIn peanoEq
+    simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.contains_eq_mem,
+      List.mem_append, or_self, decide_eq_false_iff_not]
+    simp only [List.contains_eq_mem, decide_eq_false_iff_not] at h
+    exact h
+  have h_sub := MinimalFOLDeduction.subst_id p x s h_nf
+  unfold p substF peanoEq at h_sub
+  injection h_sub with _ h_list
+  injection h_list with h_head _
+
+  theorem substT_succ (t : Term PeanoSignature α) (x : α) (s : Term PeanoSignature α) [BEq α] :
+  substT (S' t) x s = S' (substT t x s) := by
+  unfold succ
+  rw [substT]
+  simp only [List.map_cons, List.map_nil]
+
+theorem substT_add (t1 t2 : Term PeanoSignature α) (x : α) (s : Term PeanoSignature α) [BEq α] :
+  substT (t1 + t2) x s = (substT t1 x s + substT t2 x s) := by
+  show substT (Term.func PeanoFunc.add [t1, t2]) x s =
+       Term.func PeanoFunc.add [substT t1 x s, substT t2 x s]
+  rw [substT]
+  simp only [List.map_cons, List.map_nil]
+
+theorem substT_mul (t1 t2 : Term PeanoSignature α) (x : α) (s : Term PeanoSignature α) [BEq α] :
+  substT (t1 * t2) x s = (substT t1 x s * substT t2 x s) := by
+  show substT (Term.func PeanoFunc.mul [t1, t2]) x s =
+       Term.func PeanoFunc.mul [substT t1 x s, substT t2 x s]
+  rw [substT]
+  simp only [List.map_cons, List.map_nil]
+
+theorem substT_var_same (x : α) (s : Term PeanoSignature α) [BEq α] [LawfulBEq α] :
+  substT (V x) x s = s := by
+  unfold V substT
+  simp only [beq_self_eq_true, ↓reduceIte]
+
+theorem substT_var_diff (x y : α) (s : Term PeanoSignature α) [BEq α] (h : (x == y) = false) :
+  substT (V y) x s = V y := by
+  unfold V substT
+  simp only [h, Bool.false_eq_true, ↓reduceIte]

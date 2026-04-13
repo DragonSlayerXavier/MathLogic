@@ -1,6 +1,6 @@
 import MathLogic.FOL.Syntax
 
-class MinimalFOLDeduction (S : Signature) (α : Type) [BEq α] where
+class MinimalFOLDeduction (S : Signature) (α : Type) [BEq α] extends VariableSupply α where
   Pr : Formula S α → Prop
 
   -- Rules of Inference

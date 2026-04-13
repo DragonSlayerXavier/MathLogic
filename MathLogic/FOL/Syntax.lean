@@ -66,6 +66,16 @@ def isFreeFor (s : Term S α) (x : α) (A : Formula S α) : Bool :=
       else if (freeVarsTerm s).contains y then false
       else isFreeFor s x body
 
+class VariableSupply (α : Type) [BEq α] where
+  fresh : List α → α
+  fresh_is_fresh : ∀ (l : List α), l.contains (fresh l) = false
+
+theorem contains_append_false {l1 l2 : List α} {v : α} :
+  (l1 ++ l2).contains v = false → l1.contains v = false ∧ l2.contains v = false := by
+  intro h
+  rw[List.contains_append] at h
+  exact Bool.or_eq_false_iff.mp h
+
 prefix:max "!" => Term.var
 notation "⊥" => Formula.bot
 notation "⊤" => Formula.top

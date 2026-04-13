@@ -38,6 +38,48 @@ theorem zero_add (x : α) [PeanoEquality α] : ⊢ (0 + V x) ≃ V x := by
 
   exact forall_elim_simple x h_all
 
+theorem zero_add_terms (t : Term PeanoSignature α) {z : α} [PeanoEquality α] :
+  ⊢ 0 + t ≃ t := by
+  let p : Formula PeanoSignature α := (0 + V z) ≃ V z
+
+  let h_base : ⊢ p⟦z := 0⟧ := by
+    unfold p substF
+    simp only [peanoEq, HAdd.hAdd, Add.add, OfNat.ofNat, V, substT,
+      List.map_cons, List.map_nil, BEq.rfl, ↓reduceIte]
+    exact PeanoDeduction.add_zero 0
+
+  let h_step_imp : ⊢ p ⇒ p⟦z := S' (V z)⟧ := by
+    have h_subst : p⟦z := S' (V z)⟧ = (0 + S' (V z) ≃ S' (V z)) := by
+      unfold p substF
+      simp only [peanoEq, HAdd.hAdd, Add.add, OfNat.ofNat, V, succ, substT,
+        List.map_cons, List.map_nil, BEq.rfl, ↓reduceIte]
+    rw [h_subst]
+    apply MinimalFOLDeduction.deduction
+    intro h_ih
+    -- Use type ascription (h_ih : ...) to force the type match
+    let h1 := PeanoDeduction.add_succ 0 (V z)
+    let h2_imp := PeanoEquality.cong_succ (0 + V z) (V z)
+    let h2 := MinimalFOLDeduction.mp h2_imp (h_ih : ⊢ 0 + V z ≃ V z)
+    let h3_imp := EqualityDeduction.trans (0 + S' (V z)) (S' (0 + V z)) (S' (V z))
+    let h3_part1 := MinimalFOLDeduction.mp h3_imp h1
+    exact MinimalFOLDeduction.mp h3_part1 h2
+
+  let h_step := rule_gen_simple z h_step_imp
+  let h_all := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoDeduction.induction p z) h_base) h_step
+
+  -- Plug the term 't' into the forall result
+  let inst := forall_elim z t (by unfold p peanoEq isFreeFor; rfl) h_all
+
+  -- Clean up p[z := t] to show it matches our goal ⊢ 0 + t ≃ t
+  have h_final_sub : p⟦z := t⟧ = (0 + t ≃ t) := by
+    unfold p substF
+    simp only [peanoEq, HAdd.hAdd, Add.add, OfNat.ofNat, V, substT,
+      List.map_cons, List.map_nil, beq_self_eq_true, ↓reduceIte]
+    -- Since z is not in '0', substT 0 z t simplifies to 0
+    -- Since z is the variable in 'V z', substT (V z) z t simplifies to t
+  rw [h_final_sub] at inst
+  exact inst
+
 theorem succ_add (x y : α) (h_neq : (y == x) = false) [PeanoEquality α] : ⊢ (S' (V x) + V y) ≃ S' (V x + V y) := by
   let p : Formula PeanoSignature α := (S' (V x) + V y) ≃ S' (V x + V y)
 
@@ -87,6 +129,69 @@ theorem succ_add (x y : α) (h_neq : (y == x) = false) [PeanoEquality α] : ⊢ 
 
   exact forall_elim_simple y h_all
 
+theorem succ_add_terms (t1 t2 : Term PeanoSignature α) [PeanoEquality α] [VariableSupply α]
+  {z : α}
+  (h_z : (freeVarsTerm t1).contains z = false := by
+    apply contains_append_false
+    exact VariableSupply.fresh_is_fresh (freeVarsTerm t1)) :
+  ⊢ S' t1 + t2 ≃ S' (t1 + t2) := by
+  let p : Formula PeanoSignature α := (S' t1 + V z) ≃ S' (t1 + V z)
+
+  let h_base : ⊢ p⟦z := 0⟧ := by
+    have h_subst : p⟦z := 0⟧ = ((S' t1 + 0) ≃ S' (t1 + 0)) := by
+      unfold p substF peanoEq
+      simp only [List.map_cons, List.map_nil]
+      rw [substT_add]
+      rw [substT_succ]
+      rw [substT_succ]
+      rw [substT_add]
+      rw [substT_id t1 z 0 h_z]
+      rw [substT_var_same]
+    rw [h_subst]
+    let h1 := PeanoDeduction.add_zero (S' t1)
+    let h2 := PeanoDeduction.add_zero t1
+    let h3 := MinimalFOLDeduction.mp (PeanoEquality.cong_succ (t1 + 0) t1) h2
+    let h4 := MinimalFOLDeduction.mp (EqualityDeduction.symm (S' (t1 + 0)) (S' t1)) h3
+    let h5 := MinimalFOLDeduction.mp (EqualityDeduction.trans (S' t1 + 0) (S' t1) (S' (t1 + 0))) h1
+    exact MinimalFOLDeduction.mp h5 h4
+
+  let h_step_imp : ⊢ p ⇒ p⟦z := S' (V z)⟧ := by
+    have h_subst : p⟦z := S' (V z)⟧ = ((S' t1 + S' (V z)) ≃ S' (t1 + S' (V z))) := by
+      unfold p substF peanoEq
+      simp only [List.map_cons, List.map_nil]
+      rw [substT_add, substT_succ, substT_succ, substT_add]
+      rw [substT_id t1 z (S' (V z)) h_z]
+      rw [substT_var_same]
+    rw [h_subst]
+    apply MinimalFOLDeduction.deduction
+    intro h_ih
+    let ih : ⊢ S' t1 + V z ≃ S' (t1 + V z) := (h_ih : ⊢ S' t1 + V z ≃ S' (t1 + V z))
+    let h1 := PeanoDeduction.add_succ (S' t1) (V z)
+    let h2 := MinimalFOLDeduction.mp (PeanoEquality.cong_succ (S' t1 + V z) (S' (t1 + V z))) ih
+    let t1_part := MinimalFOLDeduction.mp (EqualityDeduction.trans (S' t1 + S' (V z)) (S' (S' t1 + V z)) (S' (S' (t1 + V z)))) h1
+    let h_1_2 := MinimalFOLDeduction.mp t1_part h2
+    let h3 := PeanoDeduction.add_succ t1 (V z)
+    let h4 := MinimalFOLDeduction.mp (PeanoEquality.cong_succ (t1 + S' (V z)) (S' (t1 + V z))) h3
+    let h5 := MinimalFOLDeduction.mp (EqualityDeduction.symm (S' (t1 + S' (V z))) (S' (S' (t1 + V z)))) h4
+    let t2_part := MinimalFOLDeduction.mp (EqualityDeduction.trans (S' t1 + S' (V z)) (S' (S' (t1 + V z))) (S' (t1 + S' (V z)))) h_1_2
+    exact MinimalFOLDeduction.mp t2_part h5
+
+  let h_step := rule_gen_simple z h_step_imp
+  let h_all := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoDeduction.induction p z) h_base) h_step
+
+  -- Substitute the target term t2 for the induction variable z
+  let inst := forall_elim z t2 (by unfold p peanoEq isFreeFor; rfl) h_all
+
+  -- Final cleanup: prove p[z := t2] is definitionally the goal
+  have h_final : p⟦z := t2⟧ = (S' t1 + t2 ≃ S' (t1 + t2)) := by
+    unfold p substF peanoEq
+    simp only [List.map_cons, List.map_nil]
+    rw [substT_add, substT_succ, substT_succ, substT_add]
+    rw [substT_id t1 z t2 h_z]
+    rw [substT_var_same]
+  rw [h_final] at inst
+  exact inst
+
 theorem add_assoc (x y z : α) (h_zx : (z == x) = false) (h_zy : (z == y) = false) [PeanoEquality α] : ⊢ ((V x + V y) + V z) ≃ (V x + (V y + V z)) := by
   let p : Formula PeanoSignature α := ((V x + V y) + V z) ≃ (V x + (V y + V z))
 
@@ -133,6 +238,70 @@ theorem add_assoc (x y z : α) (h_zx : (z == x) = false) (h_zy : (z == y) = fals
   let h_ind_schema := PeanoDeduction.induction p z
   let h_all := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp h_ind_schema h_base) h_step
   exact forall_elim_simple z h_all
+
+theorem add_assoc_terms (t1 t2 t3 : Term PeanoSignature α) [PeanoEquality α] [VariableSupply α]
+  {z : α} (h_z : (freeVarsTerm t1).contains z = false ∧ (freeVarsTerm t2).contains z = false := by
+    apply contains_append_false
+    exact VariableSupply.fresh_is_fresh (freeVarsTerm t1 ++ freeVarsTerm t2)) :
+  ⊢ (t1 + t2) + t3 ≃ t1 + (t2 + t3) := by
+  let p : Formula PeanoSignature α := ((t1 + t2) + V z) ≃ (t1 + (t2 + V z))
+
+  let h_base : ⊢ p⟦z := 0⟧ := by
+    have h_subst : p⟦z := 0⟧ = ((t1 + t2) + 0 ≃ t1 + (t2 + 0)) := by
+      unfold p substF peanoEq
+      simp only [List.map_cons, List.map_nil]
+      rw [substT_add, substT_add, substT_add, substT_add]
+      simp only [substT_id t1 z 0 h_z.1, substT_id t2 z 0 h_z.2]
+      rw [substT_var_same]
+    rw [h_subst]
+    let h1 := PeanoDeduction.add_zero (t1 + t2)
+    let h2 := PeanoDeduction.add_zero t2
+    let c_ax := PeanoEquality.cong_add t1 t1 (t2 + 0) t2
+    let h3 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp c_ax (EqualityDeduction.refl t1)) h2
+    let s_ax := EqualityDeduction.symm (t1 + (t2 + 0)) (t1 + t2)
+    let h4 := MinimalFOLDeduction.mp s_ax h3
+    let t_ax := EqualityDeduction.trans ((t1 + t2) + 0) (t1 + t2) (t1 + (t2 + 0))
+    let h5 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp t_ax h1) h4
+
+    exact h5
+
+
+  let h_step_imp : ⊢ p ⇒ p⟦z := S' (V z)⟧ := by
+    have h_subst : p⟦z := S' (V z)⟧ = ((t1 + t2) + S' (V z) ≃ t1 + (t2 + S' (V z))) := by
+      unfold p substF peanoEq
+      simp only [List.map_cons, List.map_nil]
+      -- Distribution for both LHS and RHS
+      rw [substT_add, substT_add, substT_add, substT_add]
+      rw [substT_id t1 z _ h_z.1, substT_id t2 z _ h_z.2]
+      rw [substT_var_same]
+    rw [h_subst]
+    apply MinimalFOLDeduction.deduction
+    intro ih
+    let s1 := PeanoDeduction.add_succ (t1 + t2) (V z)
+    let s2 := MinimalFOLDeduction.mp (PeanoEquality.cong_succ _ _) ih
+    let s3_ax := EqualityDeduction.symm (t1 + S' (t2 + V z)) (S' (t1 + (t2 + V z)))
+    let s3 := MinimalFOLDeduction.mp s3_ax (PeanoDeduction.add_succ t1 (t2 + V z))
+    let s4_inner_ax := EqualityDeduction.symm (t2 + S' (V z)) (S' (t2 + V z))
+    let s4_inner := MinimalFOLDeduction.mp s4_inner_ax (PeanoDeduction.add_succ t2 (V z))
+    let s4_imp := PeanoEquality.cong_add t1 t1 (S' (t2 + V z)) (t2 + S' (V z))
+    let s4 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp s4_imp (EqualityDeduction.refl t1)) s4_inner
+
+    let c1 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) s1) s2
+    let c2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) c1) s3
+    let c3 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) c2) s4
+
+    exact c3
+
+  let h_all := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoDeduction.induction p z) h_base) (rule_gen_simple z h_step_imp)
+  let inst := forall_elim z t3 (by unfold p peanoEq isFreeFor; rfl) h_all
+  have h_final : p⟦z := t3⟧ = ((t1 + t2) + t3 ≃ t1 + (t2 + t3)) := by
+    unfold p substF peanoEq
+    simp only [List.map_cons, List.map_nil]
+    rw [substT_add, substT_add, substT_add, substT_add]
+    simp only [substT_id t1 z t3 h_z.1, substT_id t2 z t3 h_z.2]
+    rw [substT_var_same]
+  rw [h_final] at inst
+  exact inst
 
 theorem add_comm (x y : α) (h_yx : (y == x) = false) [PeanoEquality α] : ⊢ (V x + V y) ≃ (V y + V x) := by
   let p : Formula PeanoSignature α := (V x + V y) ≃ (V y + V x)
