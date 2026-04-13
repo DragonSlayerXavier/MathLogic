@@ -130,10 +130,10 @@ theorem succ_add (x y : α) (h_neq : (y == x) = false) [PeanoEquality α] : ⊢ 
   exact forall_elim_simple y h_all
 
 theorem succ_add_terms (t1 t2 : Term PeanoSignature α) [PeanoEquality α] [VariableSupply α]
-  {z : α}
-  (h_z : (freeVarsTerm t1).contains z = false := by
-    apply contains_append_false
-    exact VariableSupply.fresh_is_fresh (freeVarsTerm t1)) :
+  {z : α} (h_z : (freeVarsTerm t1).contains z = false := by
+    simp only [freeVarsTerm, List.contains_append, Bool.or_eq_false_iff]
+    try assumption;
+    try exact VariableSupply.fresh_is_fresh _) :
   ⊢ S' t1 + t2 ≃ S' (t1 + t2) := by
   let p : Formula PeanoSignature α := (S' t1 + V z) ≃ S' (t1 + V z)
 
