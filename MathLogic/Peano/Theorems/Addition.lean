@@ -56,7 +56,7 @@ theorem zero_add_terms (t : Term PeanoSignature α) {z : α} [PeanoEquality α] 
     rw [h_subst]
     apply MinimalFOLDeduction.deduction
     intro h_ih
-    -- Use type ascription (h_ih : ...) to force the type match
+
     let h1 := PeanoDeduction.add_succ 0 (V z)
     let h2_imp := PeanoEquality.cong_succ (0 + V z) (V z)
     let h2 := MinimalFOLDeduction.mp h2_imp (h_ih : ⊢ 0 + V z ≃ V z)
@@ -67,16 +67,16 @@ theorem zero_add_terms (t : Term PeanoSignature α) {z : α} [PeanoEquality α] 
   let h_step := rule_gen_simple z h_step_imp
   let h_all := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoDeduction.induction p z) h_base) h_step
 
-  -- Plug the term 't' into the forall result
+
   let inst := forall_elim z t (by unfold p peanoEq isFreeFor; rfl) h_all
 
-  -- Clean up p[z := t] to show it matches our goal ⊢ 0 + t ≃ t
+
   have h_final_sub : p⟦z := t⟧ = (0 + t ≃ t) := by
     unfold p substF
     simp only [peanoEq, HAdd.hAdd, Add.add, OfNat.ofNat, V, substT,
       List.map_cons, List.map_nil, beq_self_eq_true, ↓reduceIte]
-    -- Since z is not in '0', substT 0 z t simplifies to 0
-    -- Since z is the variable in 'V z', substT (V z) z t simplifies to t
+
+
   rw [h_final_sub] at inst
   exact inst
 
@@ -179,10 +179,10 @@ theorem succ_add_terms (t1 t2 : Term PeanoSignature α) [PeanoEquality α] [Vari
   let h_step := rule_gen_simple z h_step_imp
   let h_all := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoDeduction.induction p z) h_base) h_step
 
-  -- Substitute the target term t2 for the induction variable z
+
   let inst := forall_elim z t2 (by unfold p peanoEq isFreeFor; rfl) h_all
 
-  -- Final cleanup: prove p[z := t2] is definitionally the goal
+
   have h_final : p⟦z := t2⟧ = (S' t1 + t2 ≃ S' (t1 + t2)) := by
     unfold p substF peanoEq
     simp only [List.map_cons, List.map_nil]
@@ -270,7 +270,7 @@ theorem add_assoc_terms (t1 t2 t3 : Term PeanoSignature α) [PeanoEquality α] [
     have h_subst : p⟦z := S' (V z)⟧ = ((t1 + t2) + S' (V z) ≃ t1 + (t2 + S' (V z))) := by
       unfold p substF peanoEq
       simp only [List.map_cons, List.map_nil]
-      -- Distribution for both LHS and RHS
+
       rw [substT_add, substT_add, substT_add, substT_add]
       rw [substT_id t1 z _ h_z.1, substT_id t2 z _ h_z.2]
       rw [substT_var_same]

@@ -3,42 +3,42 @@ import MathLogic.FOL.Syntax
 class MinimalFOLDeduction (S : Signature) (α : Type) [BEq α] extends VariableSupply α where
   Pr : Formula S α → Prop
 
-  -- Rules of Inference
+
   mp        : ∀ {p q : Formula S α}, Pr (p ⇒ q) → Pr p → Pr q
   deduction : ∀ {p q : Formula S α}, (Pr p → Pr q) → Pr (p ⇒ q)
 
-  -- I. Implication Axioms
+
   aff_cons : ∀ (p q : Formula S α), Pr (p ⇒ (q ⇒ p))
   dist_imp : ∀ (p q r : Formula S α), Pr ((p ⇒ (q ⇒ r)) ⇒ ((p ⇒ q) ⇒ (p ⇒ r)))
 
-  -- II. Conjunction Axioms
+
   conj_intro      : ∀ (p q : Formula S α), Pr (p ⇒ (q ⇒ (p ∧ q)))
   conj_elim_left  : ∀ (p q : Formula S α), Pr ((p ∧ q) ⇒ p)
   conj_elim_right : ∀ (p q : Formula S α), Pr ((p ∧ q) ⇒ q)
 
-  -- III. Disjunction Axioms
+
   disj_intro_left  : ∀ (p q : Formula S α), Pr (p ⇒ (p ∨ q))
   disj_intro_right : ∀ (p q : Formula S α), Pr (q ⇒ (p ∨ q))
   disj_elim        : ∀ (p q r : Formula S α), Pr ((p ⇒ r) ⇒ ((q ⇒ r) ⇒ ((p ∨ q) ⇒ r)))
 
-  -- IV. Negation and Truth Axioms
+
   trivial   : Pr ⊤
   neg_intro : ∀ (p : Formula S α), Pr ((p ⇒ ⊥) ⇒ ¬p)
   neg_elim  : ∀ (p : Formula S α), Pr (¬p ⇒ (p ⇒ ⊥))
 
-  -- V. IFF Axioms
+
   iff_intro      : ∀ (p q : Formula S α), Pr ((p ⇒ q) ⇒ ((q ⇒ p) ⇒ (p ⇔ q)))
   iff_elim_left  : ∀ (p q : Formula S α), Pr ((p ⇔ q) ⇒ (p ⇒ q))
   iff_elim_right : ∀ (p q : Formula S α), Pr ((p ⇔ q) ⇒ (q ⇒ p))
 
-  -- VI. Quantifier Axioms
+
   all_intro : ∀ {p q : Formula S α} (x : α), isFreeIn x p = false → Pr (p ⇒ q) → Pr (p ⇒ (∀' x, q))
   all_elim  : ∀ {p : Formula S α} (x : α) (t : Term S α), isFreeFor t x p = true → Pr ((∀' x, p) ⇒ p⟦x := t⟧)
 
   ex_intro : ∀ {p : Formula S α} (x : α) (t : Term S α), isFreeFor t x p = true → Pr (p⟦x := t⟧ ⇒ (∃' x, p))
   ex_elim  : ∀ {p q : Formula S α} (x : α), isFreeIn x q = false → Pr (p ⇒ q) → Pr ((∃' x, p) ⇒ q)
 
-  -- VII. Structural Axioms
+
   subst_self     : ∀ (p : Formula S α) (x : α), p⟦x := !x⟧ = p
   subst_id       : ∀ (p : Formula S α) (x : α) (t : Term S α), isFreeIn x p = false → p⟦x := t⟧ = p
   free_for_self  : ∀ (p : Formula S α) (x : α), isFreeFor (!x) x p = true
@@ -46,9 +46,9 @@ class MinimalFOLDeduction (S : Signature) (α : Type) [BEq α] extends VariableS
 
 notation:30 "⊢ " p:0 => MinimalFOLDeduction.Pr p
 
--- ==========================================
--- THEOREMS
--- ==========================================
+
+
+
 
 variable {S : Signature} {α : Type} [BEq α] [MinimalFOLDeduction S α]
 
@@ -73,9 +73,9 @@ theorem exists_intro_simple {p : Formula S α} (x : α) : (⊢ p) → (⊢ ∃' 
 
 variable {S : Signature} {α : Type} [BEq α]
 
--- ==========================================
--- VARIABLE & SUBST DYNAMICS
--- ==========================================
+
+
+
 
 theorem is_free_in_imp (x : α) (p q : Formula S α) :
   isFreeIn x (p ⇒ q) = (isFreeIn x p || isFreeIn x q) := rfl
@@ -99,9 +99,9 @@ theorem substF_all_same [LawfulBEq α] (p : Formula S α) (x : α) (s : Term S �
   (∀' x, p)⟦x := s⟧ = (∀' x, p) := by
   simp [substF]
 
--- ==========================================
--- QUANTIFIER RULES
--- ==========================================
+
+
+
 
 variable [MinimalFOLDeduction S α]
 
@@ -192,7 +192,7 @@ theorem all_swap {p : Formula S α} (x y : α) [LawfulBEq α] : ⊢ (∀' x, ∀
 
 theorem disj_mono {p q r s : Formula S α} : (⊢ p ⇒ r) → (⊢ q ⇒ s) → (⊢ (p ∨ q) ⇒ (r ∨ s)) := by
   intro hp hq
-  -- We need to prove p ⇒ (r ∨ s) and q ⇒ (r ∨ s)
+
   let h_p_rs := imp_trans hp (MinimalFOLDeduction.disj_intro_left r s)
   let h_q_rs := imp_trans hq (MinimalFOLDeduction.disj_intro_right r s)
   exact disj_cases h_p_rs h_q_rs

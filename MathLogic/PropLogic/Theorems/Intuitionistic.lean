@@ -5,7 +5,7 @@ import MathLogic.PropLogic.Theorems.Minimal
 open Formula
 variable {α : Type} [IntuitionisticDeduction α]
 
--- I. Falsehood and Contradiction
+
 theorem bot_iff_conj_neg (A : Formula α) : ⊢ (⊥ ⇔ (A ∧ ¬A)) := by
   have hfwd : ⊢ ⊥ ⇒ (A ∧ ¬A) := IntuitionisticDeduction.ex_falso
   have hbwd : ⊢ (A ∧ ¬A) ⇒ ⊥ := by
@@ -16,7 +16,7 @@ theorem bot_iff_conj_neg (A : Formula α) : ⊢ (⊥ ⇔ (A ∧ ¬A)) := by
     exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.neg_elim A) hna) ha
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.iff_intro ⊥ (A ∧ ¬A)) hfwd) hbwd
 
--- II. Ex Falso Variations (Negation to Implication)
+
 theorem neg_to_imp (A B : Formula α) : ⊢ (¬A ⇒ (A ⇒ B)) := by
   apply MinimalDeduction.deduction
   intro hna
@@ -59,7 +59,7 @@ theorem disj_to_neg_imp (A B : Formula α) : ⊢ ((A ∨ B) ⇒ (¬A ⇒ B)) := 
     exact hb
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.mp h_cases h_case_a) h_case_b) hab) hna
 
--- III. Double Negation and Implication
+
 theorem neg_imp_to_double_neg (A B : Formula α) : ⊢ (¬(A ⇒ B) ⇒ ¬¬A) := by
   apply MinimalDeduction.deduction
   intro hnab
@@ -104,7 +104,7 @@ theorem double_neg_imp_equiv (A B : Formula α) : ⊢ (¬¬(A ⇒ B) ⇔ (¬¬A 
     exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.neg_elim (¬B)) hnnb) hnb
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.iff_intro (¬¬(A ⇒ B)) (¬¬A ⇒ ¬¬B)) hfwd) hbwd
 
--- IV. Bottom Elimination (Identity/Zero elements)
+
 theorem disj_bot_iff_self (A : Formula α) : ⊢ ((A ∨ ⊥) ⇔ A) := by
   have hfwd : ⊢ ((A ∨ ⊥) ⇒ A) := by
     apply MinimalDeduction.deduction

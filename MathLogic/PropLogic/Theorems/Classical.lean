@@ -6,7 +6,7 @@ import MathLogic.PropLogic.Theorems.Intuitionistic
 open Formula
 variable {α : Type} [ClassicalDeduction α]
 
--- I. Fundamental Classical Principles
+
 theorem proof_by_contradiction (A : Formula α) : ⊢ ((¬A ⇒ ⊥) ⇒ A) := by
   apply MinimalDeduction.deduction
   intro h
@@ -51,7 +51,7 @@ theorem double_neg_equiv (A : Formula α) : ⊢ (A ⇔ ¬¬A) := by
   have hbwd : ⊢ (¬¬A ⇒ A) := ClassicalDeduction.dne
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.iff_intro A (¬¬A)) hfwd) hbwd
 
--- II. Classical De Morgan and Connective Equivalences
+
 theorem disj_iff_not_conj_not (A B : Formula α) : ⊢ ((A ∨ B) ⇔ ¬(¬A ∧ ¬B)) := by
   have hfwd : ⊢ ((A ∨ B) ⇒ ¬(¬A ∧ ¬B)) := by
     apply MinimalDeduction.deduction
@@ -178,7 +178,7 @@ theorem de_morgan_conj (A B : Formula α) : ⊢ (¬(A ∧ B) ⇔ (¬A ∨ ¬B)) 
   have hbwd : ⊢ ((¬A ∨ ¬B) ⇒ ¬(A ∧ B)) := disj_neg A B
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.iff_intro (¬(A ∧ B)) (¬A ∨ ¬B)) hfwd) hbwd
 
--- III. Advanced Classical Equivalences
+
 theorem neg_imp_iff_conj_neg (A B : Formula α) : ⊢ (¬(A ⇒ B) ⇔ (A ∧ ¬B)) := by
   have hfwd : ⊢ (¬(A ⇒ B) ⇒ (A ∧ ¬B)) := by
     apply MinimalDeduction.deduction

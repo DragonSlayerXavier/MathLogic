@@ -4,7 +4,7 @@ import MathLogic.PropLogic.Deduction.Minimal
 open Formula
 variable {α : Type} [MinimalDeduction α]
 
--- I. Basic Implication and Syllogism
+
 theorem self_imp (A : Formula α) : ⊢ A ⇒ A := by
   have h1 : ⊢ (A ⇒ (A ⇒ A)) := MinimalDeduction.aff_cons A A
   have h2 : ⊢ (A ⇒ ((A ⇒ A) ⇒ A)) := MinimalDeduction.aff_cons A (A ⇒ A)
@@ -25,7 +25,7 @@ theorem imp_trans (A B C : Formula α) : ⊢ (A ⇒ B) ⇒ ((B ⇒ C) ⇒ (A ⇒
   have hb : ⊢ B := MinimalDeduction.mp hab ha
   exact MinimalDeduction.mp hbc hb
 
--- II. Commutativity (Symmetry)
+
 theorem conj_symm (A B : Formula α) : ⊢ (A ∧ B) ⇒ (B ∧ A) := by
   apply MinimalDeduction.deduction
   intro hab
@@ -45,7 +45,7 @@ theorem disj_symm (A B : Formula α) : ⊢ (A ∨ B) ⇒ (B ∨ A) := by
   have h5 : ⊢ (A ∨ B) ⇒ (B ∨ A) := MinimalDeduction.mp h4 h2
   exact MinimalDeduction.mp h5 hab
 
--- III. Associativity
+
 theorem conj_assoc (A B C : Formula α) : ⊢ (A ∧ (B ∧ C)) ⇒ ((A ∧ B) ∧ C) := by
   apply MinimalDeduction.deduction
   intro habc
@@ -85,7 +85,7 @@ theorem disj_assoc (A B C : Formula α) : ⊢ (A ∨ (B ∨ C)) ⇒ ((A ∨ B) �
   have h6 := MinimalDeduction.disj_elim A (B ∨ C) ((A ∨ B) ∨ C)
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.mp h6 h1) h2) habc
 
--- IV. Distribution
+
 theorem dist_conj_disj (A B C : Formula α) : ⊢ (A ∧ (B ∨ C)) ⇒ ((A ∧ B) ∨ (A ∧ C)) := by
   apply MinimalDeduction.deduction
   intro habc
@@ -128,7 +128,7 @@ theorem dist_disj_conj (A B C : Formula α) : ⊢ (A ∨ (B ∧ C)) ⇒ ((A ∨ 
   have h5 := MinimalDeduction.disj_elim A (B ∧ C) ((A ∨ B) ∧ (A ∨ C))
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.mp h5 h1) h4) habc
 
--- V. IFF (Bi-implication)
+
 theorem iff_conj (A B C : Formula α) : ⊢ (A ⇒ (B ⇒ C)) ⇔ ((A ∧ B) ⇒ C) := by
   have hfwd : ⊢ (A ⇒ (B ⇒ C)) ⇒ ((A ∧ B) ⇒ C) := by
     apply MinimalDeduction.deduction
@@ -178,7 +178,7 @@ theorem iff_disj (A B C : Formula α) : ⊢ ((A ∨ B) ⇒ C) ⇔ ((A ⇒ C) ∧
     exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.mp h1 hac) hbc) hab
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.iff_intro ((A ∨ B) ⇒ C) ((A ⇒ C) ∧ (B ⇒ C))) hfwd) hbwd
 
--- VI. Negation and Double Negation
+
 theorem non_contradiction (A : Formula α) : ⊢ ¬(A ∧ ¬A) := by
   apply MinimalDeduction.mp (MinimalDeduction.neg_intro (A ∧ ¬A))
   apply MinimalDeduction.deduction
@@ -286,7 +286,7 @@ theorem triple_neg_equiv (A : Formula α) : ⊢ ¬A ⇔ ¬¬¬A := by
     exact MinimalDeduction.mp hnnna' hnna
   exact MinimalDeduction.mp (MinimalDeduction.mp (MinimalDeduction.iff_intro (¬A) (¬¬¬A)) hfwd) hbwd
 
--- VII. Advanced Double Negation
+
 theorem imp_neg_equiv_double_neg (A B : Formula α) : ⊢ (A ⇒ ¬B) ⇔ (¬¬A ⇒ ¬B) := by
   have hfwd : ⊢ (A ⇒ ¬B) ⇒ (¬¬A ⇒ ¬B) := by
     apply MinimalDeduction.deduction

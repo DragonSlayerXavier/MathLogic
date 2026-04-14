@@ -15,7 +15,6 @@ theorem ex_falso {p : Formula S α} : ⊢ ⊥ ⇒ p := by
     exact hbot
   exact MinimalFOLDeduction.mp (ClassicalFOLDeduction.dne) h_nnp
 
--- Reductio ad absurdum
 theorem proof_by_contradiction {p : Formula S α} : ⊢ (¬p ⇒ ⊥) ⇒ p := by
   apply MinimalFOLDeduction.deduction
   intro h

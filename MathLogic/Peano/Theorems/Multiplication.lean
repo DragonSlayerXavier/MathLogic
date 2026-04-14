@@ -45,17 +45,17 @@ theorem zero_mul_terms (t : Term PeanoSignature α) [PeanoEquality α] [Variable
   let z := VariableSupply.fresh (freeVarsTerm t)
   let p : Formula PeanoSignature α := 0 * V z ≃ 0
 
-  -- Use 'have' with 'rfl' to prove that the substitution is definitionally what we want
+
   have h_sub_base : p⟦z := 0⟧ = (0 * 0 ≃ 0) := by
     unfold p substF peanoEq
-    -- 1. Use 'congr' to move past the Formula/List wrapper
+
     congr
-    -- 2. Expose the list elements
+
     simp only [List.map_cons, List.map_nil]
-    -- 3. Resolve substitution patterns
+
     rw [substT_mul, substT_var_same]
-    -- 4. Bridge the gap between 'Term.func ... []' and '0'
-    -- You may need to add your specific notation names here (e.g., OfNat.ofNat, Zero.zero)
+
+
     unfold substT
     simp only [OfNat.ofNat, List.map_nil]
 
@@ -84,15 +84,15 @@ theorem zero_mul_terms (t : Term PeanoSignature α) [PeanoEquality α] [Variable
     rw [h_sub_step]
     apply MinimalFOLDeduction.deduction
     intro ih
-    -- FIX: cong_add needs the terms it is relating.
-    -- ih has type ⊢ 0 * V z ≃ 0, so we use those terms.
+
+
     let l1 := PeanoDeduction.mul_succ 0 (V z)
 
-    -- cong_add expects: (LHS_of_ih) (RHS_of_ih) (Term_to_add_LHS) (Term_to_add_RHS)
-    -- Your ih relates (0 * V z) to 0. You want to add 0 to both sides.
+
+
     let l2_ax := PeanoEquality.cong_add (0 * V z) 0 0 0
 
-    -- Now mp will work because the first argument matches ih's type
+
     let l2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp l2_ax ih) (EqualityDeduction.refl 0)
 
     let l3 := PeanoDeduction.add_zero (0: Term PeanoSignature α)
@@ -103,7 +103,7 @@ theorem zero_mul_terms (t : Term PeanoSignature α) [PeanoEquality α] [Variable
   let h_step := rule_gen_simple z h_step_imp
   let h_all := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoDeduction.induction p z) h_base) h_step
 
-  -- Use the 4-argument elimination. Ensure t is free for z.
+
   let inst := forall_elim z t (by unfold p isFreeFor; rfl) h_all
   rw [h_sub_final] at inst
   exact inst
@@ -183,7 +183,7 @@ theorem succ_mul (x y : α) (h_neq : (y == x) = false) [PeanoEquality α] : ⊢ 
       let r2 := PeanoDeduction.mul_zero (S'(V x))
       let r3 := PeanoDeduction.add_zero (S'(V x) * 0)
 
-      -- Chain: S'S'x * 0 ≃ 0 ≃ S'x * 0 ≃ (S'x * 0) + 0
+
       let r_mid_imp := EqualityDeduction.trans (S'(S'(V x)) * 0) 0 (S'(V x) * 0 + 0)
       let r_mid2_imp := EqualityDeduction.trans 0 (S'(V x) * 0) (S'(V x) * 0 + 0)
       let r_mid2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp r_mid2_imp (MinimalFOLDeduction.mp (EqualityDeduction.symm (S'(V x) * 0) 0) r2)) (MinimalFOLDeduction.mp (EqualityDeduction.symm (S'(V x) * 0 + 0) (S'(V x) * 0)) r3)
@@ -210,65 +210,65 @@ theorem succ_mul (x y : α) (h_neq : (y == x) = false) [PeanoEquality α] : ⊢ 
       let h3 := PeanoDeduction.add_succ (S' (V x) * V y + V y) (S' (V x))
 
       let h_lifted := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_lhs) h3
-      -- 1. Correct the definitions (No double-wrapping)
+
       let T_base := S' (V x) * V y
 
-      -- 2. Associativity: (T + y) + S'x ≃ T + (y + S'x)
-      -- We use the indices x_idx and y_idx for the freshness proof
+
+
       let b1 := add_assoc_terms T_base (V y) (S' (V x)) (by
         apply contains_append_false
         exact VariableSupply.fresh_is_fresh (freeVarsTerm T_base ++ freeVarsTerm (V y)))
 
-      -- 3. The Swap Sandwich: y + S'x ≃ S'x + y
-      -- a. y + S'x ≃ S' (y + x)
+
+
       let s1 := PeanoDeduction.add_succ (V y) (V x)
 
-      -- b. y + x ≃ x + y (Variable level)
-      -- Use indices x and y directly to match 'BEq α'
+
+
       let h_neq_xy : (x == y) = false := by rw [BEq.comm]; exact h_neq
       let s2_inner := add_comm y x h_neq_xy
       let s2 := MinimalFOLDeduction.mp (PeanoEquality.cong_succ _ _) s2_inner
 
-      -- c. S' (x + y) ≃ S'x + y (Using your clean succ_add_terms)
+
       let s3_symm := succ_add_terms (V x) (V y) (by
         exact VariableSupply.fresh_is_fresh (freeVarsTerm (V x)))
       let s3 := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) s3_symm
 
-      -- Combine Sandwich: y + S'x ≃ S'x + y
+
       let swap_val := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) s1) (MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) s2) s3)
 
       let b2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add T_base T_base _ _) (EqualityDeduction.refl T_base)) swap_val
 
-      -- 2. Shift parentheses back left: T + (S'x + y) ≃ (T + S'x) + y
+
       let b3_symm := add_assoc_terms T_base (S' (V x)) (V y) (by
         apply contains_append_false
         exact VariableSupply.fresh_is_fresh (freeVarsTerm T_base ++ freeVarsTerm (S' (V x))))
       let b3 := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) b3_symm
 
-      -- 3. Combine the bridge steps and lift to the successor level
+
       let bridge_inner := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) b1) (MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) b2) b3)
       let bridge := MinimalFOLDeduction.mp (PeanoEquality.cong_succ _ _) bridge_inner
 
-      -- 4. Connect to our main proof line
-      -- Current result: S'S'x * S'y ≃ S' ((T_base + S'x) + y)
+
+
       let h_bridged := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_lifted) bridge
 
-      -- 5. Successor Sinking: S' ( (T_base + S'x) + y ) ≃ (T_base + S'x) + S'y
+
       let h_sink_ax := PeanoDeduction.add_succ (T_base + S' (V x)) (V y)
       let h_sink := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) h_sink_ax
 
-      -- Now the relay works: [LHS ≃ S'(...)] + [S'(...) ≃ Target]
+
       let c1 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_bridged) h_sink
 
-      -- 6. Match Multiplication Definition: (T_base + S'x) + S'y ≃ (S'x * S'y) + S'y
-      -- We need to flip the mul_succ axiom here too!
+
+
       let def_mul_ax := PeanoDeduction.mul_succ (S' (V x)) (V y)
       let def_mul_symm := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) def_mul_ax
 
       let h_final_match_ax := PeanoEquality.cong_add (T_base + S' (V x)) (S' (V x) * S' (V y)) (S' (V y)) (S' (V y))
       let h_final_match := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp h_final_match_ax def_mul_symm) (EqualityDeduction.refl (S' (V y)))
 
-      -- 7. Final Transitivity to Close the Goal
+
       exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) c1) h_final_match
 
     let h_q := forall_elim_simple y (MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoDeduction.induction q y) q_base) (rule_gen_simple y q_step_imp))
@@ -326,7 +326,7 @@ theorem succ_mul_terms (t1 t2 : Term PeanoSignature α) [PeanoEquality α] [Vari
     let r1_ax := PeanoEquality.cong_add (t1 * S' (V z)) (A + C) (S' B) (S' B)
     let r1 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp r1_ax r1_inner) (EqualityDeduction.refl (S' B))
 
-    -- The Shuffle Bridge: ((A+B) + S'C) ≃ ((A+C) + S'B)
+
     let s1 := add_assoc_terms A B (S' C) (by
       apply contains_append_false
       exact VariableSupply.fresh_is_fresh (freeVarsTerm A ++ freeVarsTerm B))
@@ -334,35 +334,35 @@ theorem succ_mul_terms (t1 t2 : Term PeanoSignature α) [PeanoEquality α] [Vari
     let s2_comm := add_comm_terms B (S' C) (by
       exact VariableSupply.fresh_is_fresh (freeVarsTerm B))
     let s2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add A A _ _)
-                (EqualityDeduction.refl A)) s2_comm -- A+(B+S'C) ≃ A+(S'C+B)
+                (EqualityDeduction.refl A)) s2_comm
 
     let s3_succ := succ_add_terms C B (by exact VariableSupply.fresh_is_fresh (freeVarsTerm C))
     let s3 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add A A _ _)
-                (EqualityDeduction.refl A)) s3_succ -- A+(S'C+B) ≃ A+S'(C+B)
+                (EqualityDeduction.refl A)) s3_succ
 
-    -- Successor Commutativity
+
     let s4_comm := add_comm_terms C B
     let s4 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add A A _ _)
                 (EqualityDeduction.refl A))
-                (MinimalFOLDeduction.mp (PeanoEquality.cong_succ _ _) s4_comm) -- A+S'(C+B) ≃ A+S'(B+C)
+                (MinimalFOLDeduction.mp (PeanoEquality.cong_succ _ _) s4_comm)
 
-    -- s5: Using MP for Symmetry
+
     let s5_symm_ax := EqualityDeduction.symm (S' B + C) (S' (B + C))
     let s5_succ := MinimalFOLDeduction.mp s5_symm_ax (succ_add_terms B C (by exact VariableSupply.fresh_is_fresh (freeVarsTerm B)))
     let s5 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add A A _ _)
-                (EqualityDeduction.refl A)) s5_succ -- A+S'(B+C) ≃ A+(S'B+C)
+                (EqualityDeduction.refl A)) s5_succ
 
     let s6_comm := add_comm_terms (S' B) C (by exact VariableSupply.fresh_is_fresh (freeVarsTerm (S' B)))
     let s6 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add A A _ _)
-                (EqualityDeduction.refl A)) s6_comm -- A+(S'B+C) ≃ A+(C+S'B)
+                (EqualityDeduction.refl A)) s6_comm
 
-    -- s7: Corrected symmetry for associativity
+
     let s7_symm_ax := EqualityDeduction.symm ((A + C) + S' B) (A + (C + S' B))
     let s7 := MinimalFOLDeduction.mp s7_symm_ax (add_assoc_terms A C (S' B) (by
       apply contains_append_false
       exact VariableSupply.fresh_is_fresh (freeVarsTerm A ++ freeVarsTerm C)))
 
-    -- Transitivity Chain
+
     let bridge := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _)
                     (MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) s1) s2))
                     (MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) s3)
@@ -446,58 +446,58 @@ theorem add_mul (x y z : α) (h_xy : (x == y) = false) (h_yz : (y == z) = false)
     rw[h_sub]
     apply MinimalFOLDeduction.deduction
     intro h_ih
-    -- 1. Setup shorthand for the four terms
+
     let A := V x * V z
     let B := V y * V z
     let C := V x
     let D := V y
 
-    -- 2. LHS Expansion (Targeting (A + B) + (C + D))
+
     let h_lhs_exp := PeanoDeduction.mul_succ (V x + V y) (V z)
     let h_ih_cong := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add _ _ _ _) h_ih) (EqualityDeduction.refl (V x + V y))
     let h_lhs_total := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_lhs_exp) h_ih_cong
 
-    -- 3. The Shuffle: (A + B) + (C + D) ≃ (A + C) + (B + D)
-    -- Step A: (A + B) + (C + D) ≃ ((A + B) + C) + D
+
+
     let s1 := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) (add_assoc_terms (A + B) C D (by
       apply contains_append_false
       exact VariableSupply.fresh_is_fresh (freeVarsTerm (A + B) ++ freeVarsTerm C)))
 
-    -- Step B: ((A + B) + C) + D ≃ (A + (B + C)) + D
+
     let s2_inner := add_assoc_terms A B C (by
       apply contains_append_false
       exact VariableSupply.fresh_is_fresh (freeVarsTerm A ++ freeVarsTerm B))
     let s2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add _ _ D D) s2_inner) (EqualityDeduction.refl D)
 
-    -- Step C: (A + (B + C)) + D ≃ (A + (C + B)) + D (Using your sorried add_comm_terms)
+
     let s3_swap := add_comm_terms B C (by exact VariableSupply.fresh_is_fresh (freeVarsTerm B))
     let s3_inner := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add A A _ _) (EqualityDeduction.refl A)) s3_swap
     let s3 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add _ _ D D) s3_inner) (EqualityDeduction.refl D)
 
-    -- Step D: (A + (C + B)) + D ≃ ((A + C) + B) + D
+
     let s4_inner_symm := add_assoc_terms A C B (by
       apply contains_append_false
       exact VariableSupply.fresh_is_fresh (freeVarsTerm A ++ freeVarsTerm C))
     let s4_inner := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) s4_inner_symm
     let s4 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add _ _ D D) s4_inner) (EqualityDeduction.refl D)
 
-    -- Step E: ((A + C) + B) + D ≃ (A + C) + (B + D)
+
     let s5 := add_assoc_terms (A + C) B D (by
       apply contains_append_false
       exact VariableSupply.fresh_is_fresh (freeVarsTerm (A + C) ++ freeVarsTerm B))
 
-    -- 4. Combine Shuffle: (A + B) + (C + D) ≃ (A + C) + (B + D)
+
     let h_shuff_1 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) s1) s2
     let h_shuff_2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_shuff_1) s3
     let h_shuff_3 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_shuff_2) s4
     let h_bridge := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_shuff_3) s5
 
-    -- 5. RHS Expansion (A + C) + (B + D) ≃ (x * S'z) + (y * S'z)
+
     let h_rhs_x := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) (PeanoDeduction.mul_succ (V x) (V z))
     let h_rhs_y := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) (PeanoDeduction.mul_succ (V y) (V z))
     let h_rhs_total := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add _ _ _ _) h_rhs_x) h_rhs_y
 
-    -- 6. Final Chain
+
     let c1 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_lhs_total) h_bridge
     exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) c1) h_rhs_total
 
@@ -593,11 +593,11 @@ theorem mul_add (x y z : α) (h_xy : (x == y) = false) (h_yz : (y == z) = false)
       exact VariableSupply.fresh_is_fresh (freeVarsTerm A ++ freeVarsTerm C))
     let s3 := MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) s3_symm
 
-    -- 5. Combine the shuffle chain
+
     let h_shuffle := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) s1)
                       (MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) s2) s3)
 
-    -- LHS ≃ ((A+B)+C) ≃ ((A+C)+B) ≃ RHS
+
     let c1 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) h_lhs_total) h_shuffle
     exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) c1)
             (MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) h_rhs_total)
@@ -614,7 +614,7 @@ theorem mul_add_terms (t1 t2 t3 : Term PeanoSignature α) [PeanoEquality α] [Va
   ⊢ (t1 * (t2 + t3)) ≃ ((t1 * t2) + (t1 * t3)) := by
   let p : Formula PeanoSignature α := (t1 * (t2 + V z)) ≃ ((t1 * t2) + (t1 * V z))
 
-  -- The base case: t1 * (t2 + 0) ≃ (t1 * t2) + (t1 * 0)
+
   have h_base : ⊢ p⟦z := 0⟧ := by
     have h_sub : p⟦z := 0⟧ = (t1 * (t2 + 0) ≃ (t1 * t2) + (t1 * 0)) := by
       unfold p substF peanoEq V
@@ -624,19 +624,19 @@ theorem mul_add_terms (t1 t2 t3 : Term PeanoSignature α) [PeanoEquality α] [Va
       rw [substT_id t2 z 0 h_z.2]
       simp only [and_self]
     rw [h_sub]
-    -- LHS: t1 * (t2 + 0) ≃ t1 * t2
+
     let l1 := PeanoDeduction.add_zero t2
     let l_total := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_mul t1 t1 _ _)
                     (EqualityDeduction.refl t1)) l1
 
-    -- RHS: (t1 * t2) + (t1 * 0) ≃ (t1 * t2) + 0 ≃ t1 * t2
+
     let r1 := PeanoDeduction.mul_zero t1
     let r2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_add _ _ _ _)
                 (EqualityDeduction.refl (t1 * t2))) r1
     let r3 := PeanoDeduction.add_zero (t1 * t2)
     let r_total := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) r2) r3
 
-    -- Bridge: LHS ≃ t1*t2 ≃ RHS
+
     exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) l_total)
             (MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) r_total)
   have h_step_imp : ⊢ p ⇒ p⟦z := S' (V z)⟧ := by
@@ -678,11 +678,11 @@ theorem mul_add_terms (t1 t2 t3 : Term PeanoSignature α) [PeanoEquality α] [Va
   let h_step := rule_gen_simple z h_step_imp
   let h_all := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoDeduction.induction p z) h_base) h_step
 
-  -- Use forall_elim to plug in t3 for z
-  -- We provide a small proof that t3 is "free for" z (usually handled by rfl if p is simple)
+
+
   let inst := forall_elim z t3 (by unfold p peanoEq isFreeFor; rfl) h_all
 
-  -- This step cleans up the substitution so it matches your goal exactly
+
   have h_final : p⟦z := t3⟧ = (t1 * (t2 + t3) ≃ (t1 * t2) + (t1 * t3)) := by
     unfold p substF peanoEq V
     simp (config := { decide := true }) only [substT_mul, substT_add, substT,
@@ -721,25 +721,25 @@ theorem mul_assoc (x y z : α) (h_xy : (x == y) = false) (h_yz : (y == z) = fals
     apply MinimalFOLDeduction.deduction
     intro ih
 
-    -- 1. Expand LHS: (x * y) * S'z ≃ ((x * y) * z) + (x * y)
+
     let l1 := PeanoDeduction.mul_succ (V x * V y) (V z)
 
-    -- 2. Apply IH to LHS: ((x * y) * z) + (x * y) ≃ (V x * (V y * V z)) + (V x * V y)
+
     let l2_ax := PeanoEquality.cong_add ((V x * V y) * V z) (V x * (V y * V z)) (V x * V y) (V x * V y)
     let l2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp l2_ax ih) (EqualityDeduction.refl (V x * V y))
     let lhs_final := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) l1) l2
 
-    -- 3. Expand RHS: V x * (V y * S'z) ≃ V x * ((V y * V z) + V y)
+
     let r1_inner := PeanoDeduction.mul_succ (V y) (V z)
     let r1 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (PeanoEquality.cong_mul (V x) (V x) _ _)
                 (EqualityDeduction.refl (V x))) r1_inner
 
-    -- 4. Distribute V x over the inner sum: V x * ((V y * V z) + V y) ≃ (V x * (V y * V z)) + (V x * V y)
-    -- We use our new mul_add_terms here!
+
+
     let r2 := mul_add_terms (V x) (V y * V z) (V y)
     let rhs_final := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) r1) r2
 
-    -- 5. Final Bridge: LHS ≃ common_term ≃ RHS
+
     exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) lhs_final)
             (MinimalFOLDeduction.mp (EqualityDeduction.symm _ _) rhs_final)
   let h_step : ⊢ ∀' z, p ⇒ p⟦z := S' (V z)⟧ := rule_gen_simple z h_step_imp
@@ -771,19 +771,19 @@ theorem mul_comm (x y : α) (h_xy : (x == y) = false) [PeanoEquality α] :
     apply MinimalFOLDeduction.deduction
     intro ih
 
-    -- 1. Expand LHS: V x * S' (V y) ≃ (V x * V y) + V x
+
     let l1 := PeanoDeduction.mul_succ (V x) (V y)
 
-    -- 2. Apply IH to LHS: (V x * V y) + V x ≃ (V y * V x) + V x
+
     let l2_ax := PeanoEquality.cong_add (V x * V y) (V y * V x) (V x) (V x)
     let l2 := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp l2_ax ih) (EqualityDeduction.refl (V x))
     let lhs_final := MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) l1) l2
 
-    -- 3. Expand RHS: S' (V y) * V x ≃ (V y * V x) + V x
-    -- This is exactly what succ_mul_terms provides
+
+
     let rhs_final := succ_mul_terms (V y) (V x) (by exact VariableSupply.fresh_is_fresh (freeVarsTerm (V y)))
 
-    -- 4. Bridge: LHS ≃ middle ≃ RHS
+
     let symm_ax := EqualityDeduction.symm (S' (V y) * V x) ((V y * V x) + V x)
     let rhs_symm := MinimalFOLDeduction.mp symm_ax rhs_final
     exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (EqualityDeduction.trans _ _ _) lhs_final) rhs_symm

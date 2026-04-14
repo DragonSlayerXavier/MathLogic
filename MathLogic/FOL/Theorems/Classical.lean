@@ -5,7 +5,6 @@ import MathLogic.FOL.Theorems.Intuitionistic
 
 variable {S : Signature} {α : Type} [BEq α] [ClassicalFOLDeduction S α]
 
--- The forward direction of one of the De Morgan laws for quantifiers
 theorem all_iff_not_ex_not {p : Formula S α} (x : α) [LawfulBEq α] : ⊢ (∀' x, p) ⇔ ¬∃' x, ¬p := by
   have hfwd : ⊢ (∀' x, p) ⇒ ¬∃' x, ¬p := by
     let h_inner : ⊢ ¬p ⇒ (∀' x, p) ⇒ ⊥ := by
@@ -52,7 +51,7 @@ theorem all_iff_not_ex_not {p : Formula S α} (x : α) [LawfulBEq α] : ⊢ (∀
     exact MinimalFOLDeduction.all_intro x (by simp only [isFreeIn, BEq.rfl, ↓reduceIte]) h_p_from_nex
   exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro _ _) hfwd) hbwd
 
--- Distributing existence over implication when x is not free in B
+
 theorem ex_imp_dist_left_iff {p q : Formula S α} (x : α) [LawfulBEq α] :
   isFreeIn x q = false → ⊢ (∃' x, p ⇒ q) ⇔ (∀' x, p) ⇒ q := by
     intro hfree
@@ -79,7 +78,7 @@ theorem ex_imp_dist_left_iff {p q : Formula S α} (x : α) [LawfulBEq α] :
         intro h_neg_ex
         let h_neg_ex_imp_bot := MinimalFOLDeduction.mp (MinimalFOLDeduction.neg_elim (∃' x, p ⇒ q)) h_neg_ex
 
-        -- First, we prove ∀x, p from the assumption that no (p ⇒ q) exists.
+
         let h_all_p : ⊢ ∀' x, p := by
           let h_p_raw : ⊢ ¬(∃' x, p ⇒ q) ⇒ p := by
             apply MinimalFOLDeduction.deduction
@@ -92,24 +91,24 @@ theorem ex_imp_dist_left_iff {p q : Formula S α} (x : α) [LawfulBEq α] :
               let h_pq : ⊢ p ⇒ q := by
                 apply MinimalFOLDeduction.deduction
                 intro hp
-                -- If p is false, p ⇒ q is vacuously true (via EFQ)
+
                 exact MinimalFOLDeduction.mp (ex_falso) (MinimalFOLDeduction.mp h_p_bot hp)
               let h_ex_intro_ax := MinimalFOLDeduction.ex_intro x (!x) (MinimalFOLDeduction.free_for_self (p ⇒ q) x)
               rw [MinimalFOLDeduction.subst_self] at h_ex_intro_ax
-              -- Contradicts the assumption that no such x exists
+
               exact MinimalFOLDeduction.mp h_nex_imp_bot_inner (MinimalFOLDeduction.mp h_ex_intro_ax h_pq)
             let h_nn_p := MinimalFOLDeduction.mp (MinimalFOLDeduction.neg_intro (¬p)) h_p_bot_bot
             exact MinimalFOLDeduction.mp (ClassicalFOLDeduction.dne) h_nn_p
 
-          -- Generalize the proof of p to ∀x, p
+
           let h_gen_all := MinimalFOLDeduction.all_intro x (by simp only [isFreeIn, BEq.rfl,
             ↓reduceIte]) h_p_raw
           exact MinimalFOLDeduction.mp h_gen_all h_neg_ex
 
-        -- Now we have ∀x, p, we get q from our main hypothesis
+
         let h_q := MinimalFOLDeduction.mp h_hyp h_all_p
 
-        -- Finally, we show q also leads to a contradiction
+
         let h_neg_q : ⊢ q ⇒ ⊥ := by
           apply MinimalFOLDeduction.deduction
           intro h_val_q
@@ -120,12 +119,12 @@ theorem ex_imp_dist_left_iff {p q : Formula S α} (x : α) [LawfulBEq α] :
 
         exact MinimalFOLDeduction.mp h_neg_q h_q
 
-      -- Wrap it up with DNE
+
       let h_n_n_ex := MinimalFOLDeduction.mp (MinimalFOLDeduction.neg_intro (¬(∃' x, p ⇒ q))) h_nn_goal_bot
       exact MinimalFOLDeduction.mp (ClassicalFOLDeduction.dne) h_n_n_ex
     exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro _ _) hfwd) hbwd
 
--- Distributing existence over implication when x is not free in A
+
 theorem ex_imp_dist_right_iff {p q : Formula S α} (x : α) [LawfulBEq α] :
   isFreeIn x p = false → ⊢ (∃' x, p ⇒ q) ⇔ p ⇒ ∃' x, q := by
     intro hfree
@@ -181,7 +180,7 @@ theorem ex_imp_dist_right_iff {p q : Formula S α} (x : α) [LawfulBEq α] :
     exact MinimalFOLDeduction.mp (MinimalFOLDeduction.mp (MinimalFOLDeduction.iff_intro _ _) hfwd) hbwd
 
 
--- The classical De Morgan equivalence for quantifiers
+
 theorem ex_not_iff_not_all {p : Formula S α} (x : α) [LawfulBEq α] :
   ⊢ (∃' x, ¬p) ⇔ ¬∀' x, p := by
   have hfwd : ⊢ (∃' x, ¬p) ⇒ ¬∀' x, p := by
